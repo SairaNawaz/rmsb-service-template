@@ -53,5 +53,5 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.DEPLOY_PAT }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ env.OWNER }}/rmsb-dashboard/dispatches \
+            https://api.github.com/repos/${{ env.OWNER }}/multiservice_process_dashboard/dispatches \
             -d '{"event_type":"service-deploy"}'
