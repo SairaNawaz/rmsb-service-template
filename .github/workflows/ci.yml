@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  OWNER: sairanawaz
+  OWNER: ${{ github.repository_owner }}
   # TODO: update SERVICE_NAME to match your service (e.g. s2, hr, finance)
   SERVICE_NAME: svc
 
