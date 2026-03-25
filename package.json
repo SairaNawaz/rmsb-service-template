@@ -1,17 +1,22 @@
 {
   "name": "rmsb-service-template",
   "version": "1.0.0",
+  "description": "Kloudius Microservice — replace with your service name",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev": "concurrently \"nodemon src/index.js\" \"npm run dev --prefix frontend\"",
+    "dev:api": "nodemon src/index.js",
+    "dev:ui": "npm run dev --prefix frontend"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^16.0.0",
+    "dotenv": "^17.3.1",
     "express": "^4.18.2",
-    "pg": "^8.11.0"
+    "pg": "^8.11.3"
   },
   "devDependencies": {
-    "nodemon": "^3.0.0"
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.0.1"
   }
 }

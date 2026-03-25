@@ -6,9 +6,6 @@ COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ ./
 
-# TODO: update VITE_SERVICE_BASE to match your service's path_prefix (e.g. /s2)
-ARG VITE_SERVICE_BASE=/svc
-ENV VITE_SERVICE_BASE=$VITE_SERVICE_BASE
 RUN npm run build
 
 # ── Stage 2: API server + serve built frontend ──────────────

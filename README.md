@@ -1,6 +1,6 @@
-# RMSB Service Template
+# Kloudius MultiService Process Dashboard — Service Template
 
-A starting point for building microservices on the RMSB Platform. Includes shared auth, sidebar navigation, org user management, and auto-deploy to the platform.
+A starting point for building microservices on the Kloudius MultiService Process Dashboard. Includes shared auth, sidebar navigation, org user management, and auto-deploy to the platform.
 
 ---
 
@@ -11,7 +11,7 @@ A starting point for building microservices on the RMSB Platform. Includes share
 - **Shared auth** — reads session from dashboard localStorage, no separate login needed
 - **Sidebar layout** with Users page (Microsoft Graph org users + platform roles)
 - **Multi-stage Dockerfile** — builds frontend and serves it from the API container
-- **CI/CD** — builds image, pushes to GHCR, triggers rmsb-dashboard deploy automatically
+- **CI/CD** — builds image, pushes to GHCR, triggers platform deploy automatically
 
 ---
 
@@ -19,10 +19,10 @@ A starting point for building microservices on the RMSB Platform. Includes share
 
 ### 1. Create a new repo from this template
 
-On GitHub, click **Use this template** → **Create a new repository**.
+On GitHub → **Kloudius** org → click **Use this template** → **Create a new repository**.
 
-Name it following the convention: `rmsb-<service-name>-<description>`
-e.g. `rmsb-s2-capacity-planning`
+Name it following the convention: `<service-name>-<description>`
+e.g. `s2-capacity-planning`
 
 ---
 
@@ -35,17 +35,17 @@ This becomes the URL path: `https://kloudiusms.bounceme.net/<name>`
 
 ### 3. Update the TODOs
 
-Search for `TODO` across the repo — there are 7 places to update:
+Search for `TODO` across the repo — there are 6 places to update:
 
 | File | What to change |
 |------|---------------|
-| `.github/workflows/ci.yml` | `SERVICE_NAME` and `VITE_SERVICE_BASE` |
-| `Dockerfile` | `VITE_SERVICE_BASE` build arg default |
+| `.github/workflows/ci.yml` | `SERVICE_NAME` env var |
+| `frontend/vite.config.ts` | `base` path to match your service prefix (e.g. `'/s2'`) |
+| `docker-compose.yml` | Service name (e.g. `s2`) |
 | `src/index.js` | `SERVICE_NAME`, mount your API routes |
 | `src/routes/items.js` | Rename and replace with your routes |
 | `src/db/migrate.js` | Replace example table with your tables |
 | `frontend/src/components/Layout.tsx` | `SERVICE_DISPLAY_NAME` and `SERVICE_ICON` |
-| `frontend/src/main.tsx` | `VITE_SERVICE_BASE` default value |
 | `frontend/src/App.tsx` | Add your page imports and routes |
 | `frontend/src/pages/Home.tsx` | Replace with your main page |
 
@@ -57,7 +57,7 @@ Add `DEPLOY_PAT` to your new repo's secrets:
 
 1. GitHub → repo **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 2. Name: `DEPLOY_PAT`
-3. Value: the same fine-grained PAT used by other service repos (Contents: read+write on `rmsb-dashboard`)
+3. Value: the same fine-grained PAT used by other service repos (Contents: read+write on `Kloudius/multiservice_process_dashboard`)
 
 ---
 
@@ -83,19 +83,21 @@ Push your code — CI will build the image, push to GHCR, and trigger the platfo
 ## Local Development
 
 ```bash
-# Copy env file
+# Copy env and docker-compose files
 cp .env.example .env
+cp docker-compose.example.yml docker-compose.yml
 
 # Install dependencies
 npm install
 cd frontend && npm install && cd ..
 
-# Start postgres (from rmsb-dashboard directory)
-docker compose up postgres -d
+# Start everything (postgres + API + frontend)
+docker compose up --build
 
-# Run API and frontend together
-npm run dev          # API on :3001
-cd frontend && npm run dev   # Frontend on :5174
+# Or run without Docker
+npm run dev        # API + frontend together
+npm run dev:api    # API only on :3000
+npm run dev:ui     # Frontend only on :5174
 ```
 
 ---
@@ -120,7 +122,7 @@ Browser → nginx → gateway (/api/*) → registry / users / graph
 ## File Structure
 
 ```
-rmsb-service-template/
+your-service/
 ├── src/
 │   ├── index.js           # Express app entry point
 │   ├── routes/
@@ -141,7 +143,8 @@ rmsb-service-template/
 │   │       └── Users.tsx  # Org users + platform roles (ready to use)
 │   ├── vite.config.ts
 │   └── Dockerfile         # Dev server (local only)
-├── Dockerfile             # Production: builds frontend + API in one image
+├── Dockerfile                    # Production: builds frontend + API in one image
+├── docker-compose.example.yml    # Copy to docker-compose.yml for local dev
 ├── .env.example
 └── .github/
     └── workflows/
