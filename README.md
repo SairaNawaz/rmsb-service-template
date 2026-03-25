@@ -39,7 +39,7 @@ Search for `TODO` across the repo — there are 6 places to update:
 
 | File | What to change |
 |------|---------------|
-| `.github/workflows/ci.yml` | `SERVICE_NAME` env var |
+| `.github/workflows/ci.yml` | `SERVICE_NAME` env var + replace `workflow_dispatch` with `push` trigger |
 | `frontend/vite.config.ts` | `base` path to match your service prefix (e.g. `'/s2'`) |
 | `docker-compose.yml` | Service name (e.g. `s2`) |
 | `src/index.js` | `SERVICE_NAME`, mount your API routes |

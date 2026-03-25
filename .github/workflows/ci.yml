@@ -3,10 +3,12 @@ name: CI — Build & Push Images
 # TODO: update service name in the image tag below
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+  # TODO: after setup, replace workflow_dispatch with:
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
 
 env:
   REGISTRY: ghcr.io
