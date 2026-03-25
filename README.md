@@ -74,9 +74,25 @@ Add `DEPLOY_PAT` to your new repo's secrets:
 
 ---
 
-### 6. Push to main
+### 6. Enable CI and push to main
 
-Push your code — CI will build the image, push to GHCR, and trigger the platform deploy automatically.
+The workflow trigger is set to `workflow_dispatch` (manual) by default to prevent the template from running CI on itself. Before pushing, switch it to auto:
+
+In `.github/workflows/ci.yml`, replace:
+```yaml
+on:
+  workflow_dispatch:
+```
+With:
+```yaml
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+```
+
+Then push — CI will build the image, push to GHCR, and trigger the platform deploy automatically.
 
 ---
 
