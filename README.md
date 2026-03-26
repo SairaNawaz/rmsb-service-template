@@ -24,54 +24,47 @@ GitHub → **Kloudius** org → **Use this template** → **Create a new reposit
 
 ---
 
-### 2. Set up GitHub environment
+### 2. Register your service on the dashboard
+
+Go to `https://kloudiusms.bounceme.net/settings` → **Register Service**.
+
+Fill in Display Name, Icon, Description, and the repo URL from step 1. After submitting, a callout shows your assigned values — **copy these before proceeding**:
+
+| Value | Example | Used for |
+|-------|---------|----------|
+| **Service ID** | `s2` | `SERVICE_NAME` GitHub variable, image name |
+| **Path Prefix** | `/s2` | `VITE_BASE_PATH` GitHub variable |
+| **Schema Name** | `schema_s2` | `DB_SCHEMA` in your `.env` |
+
+> The service starts as **pending** — you activate it after your first successful push.
+
+---
+
+### 3. Set up GitHub environment
 
 Go to repo **Settings → Environments → New environment** → name it `production`.
 
-Add the following secret:
+Add the following:
 
 | Type | Name | Value |
 |------|------|-------|
 | Secret | `DEPLOY_TOKEN` | Fine-grained PAT (Contents: read+write on `multiservice_process_dashboard`) |
+| Variable | `SERVICE_NAME` | Service ID from step 2 (e.g. `s2`) |
+| Variable | `VITE_BASE_PATH` | Path Prefix from step 2 (e.g. `/s2`) |
 
-Add the following at **Settings → Variables → Actions** (repo level):
+Also add at **Settings → Variables → Actions** (repo level):
 
 | Name | Value |
 |------|-------|
 | `DEPLOY_ENV` | `production` |
 
----
-
-### 3. Register the service on the dashboard
-
-1. Go to `https://kloudiusms.bounceme.net/settings`
-2. Click **Register Service** — fill in Display Name, Icon, Description, and Repo URL
-3. After submitting, a callout shows your assigned values:
-
-| Value | Example | Where to use |
-|-------|---------|--------------|
-| **Service ID** | `s2` | `SERVICE_NAME` GitHub variable |
-| **Path Prefix** | `/s2` | `VITE_BASE_PATH` GitHub variable, `DB_SCHEMA` |
-| **Schema Name** | `schema_s2` | `DB_SCHEMA` in your `.env` |
+> No workflow files need editing — CI reads everything from these variables.
 
 ---
 
-### 4. Set GitHub environment variables
+### 4. Build your service
 
-In the `production` environment (Settings → Environments → production), add:
-
-| Type | Name | Value |
-|------|------|-------|
-| Variable | `SERVICE_NAME` | assigned Service ID (e.g. `s2`) |
-| Variable | `VITE_BASE_PATH` | assigned Path Prefix (e.g. `/s2`) |
-
-> These drive the CI image name and Vite base path — no workflow files need editing.
-
----
-
-### 5. Update your Dockerfile
-
-Replace the placeholder with your stack. If your service has a Vite frontend, wire up `VITE_BASE_PATH`:
+Replace `Dockerfile` with your stack. If your service has a Vite frontend, wire up `VITE_BASE_PATH` so assets are served correctly under the path prefix:
 
 ```dockerfile
 ARG VITE_BASE_PATH=/
@@ -79,23 +72,16 @@ ENV VITE_BASE_PATH=$VITE_BASE_PATH
 RUN npm run build
 ```
 
-And in `vite.config`:
+In `vite.config`:
 
 ```ts
 base: process.env.VITE_BASE_PATH || '/',
+build: {
+  assetsDir: 'static',
+},
 ```
 
----
-
-### 6. Push to main
-
-CI will build your image, push to GHCR, and trigger the platform deploy.
-
-Then go back to the dashboard and click **Activate** on your service — this adds it to the compose and deploys it.
-
----
-
-## Local Development
+Set up local dev:
 
 ```bash
 cp .env.example .env
@@ -105,7 +91,17 @@ cp docker-compose.example.yml docker-compose.yml
 docker compose up --build
 ```
 
-Open `http://localhost:3000` — you should see the health check page.
+---
+
+### 5. Push to main
+
+CI will build your image, push to GHCR, and trigger the platform deploy.
+
+---
+
+### 6. Activate on the dashboard
+
+Go back to `https://kloudiusms.bounceme.net/settings`, find your service and click **Activate**. This adds it to the platform compose and deploys your container.
 
 ---
 
@@ -155,8 +151,6 @@ if (!user) {
 ```
 
 **Calling your own API:**
-
-All requests go through the gateway at your service's path prefix:
 
 ```ts
 const GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || window.location.origin;
