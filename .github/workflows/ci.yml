@@ -1,18 +1,13 @@
 name: CI — Build & Push Images
 
-# TODO: update service name in the image tag below
-
 on:
-  workflow_dispatch:
-  # TODO: after setup, replace workflow_dispatch with:
-  # push:
-  #   branches: [main]
-  # pull_request:
-  #   branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 env:
   REGISTRY: ghcr.io
-  OWNER: kloudius
   # TODO: update SERVICE_NAME to match your service (e.g. s2, hr, finance)
   SERVICE_NAME: svc
 
@@ -20,11 +15,15 @@ jobs:
   build:
     name: Build Service Image
     runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
     permissions:
       contents: read
       packages: write
 
     steps:
+      - name: Set lowercase owner
+        run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -45,15 +44,12 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           tags: ghcr.io/${{ env.OWNER }}/rmsb-${{ env.SERVICE_NAME }}-api:latest
-          # TODO: update VITE_SERVICE_BASE to match your path_prefix (e.g. /s2)
-          build-args: |
-            VITE_SERVICE_BASE=/${{ env.SERVICE_NAME }}
 
       - name: Trigger dashboard deploy
         if: github.event_name == 'push'
         run: |
           curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.DEPLOY_PAT }}" \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ env.OWNER }}/multiservice_process_dashboard/dispatches \
+            https://api.github.com/repos/${{ github.repository_owner }}/multiservice_process_dashboard/dispatches \
             -d '{"event_type":"service-deploy"}'

@@ -1,25 +1,19 @@
-# ── Stage 1: Build React frontend ──────────────────────────
-FROM node:20-alpine AS frontend-build
+# ─────────────────────────────────────────────────────────
+# Dockerfile — replace with your own implementation
+#
+# Requirements:
+#   - Expose PORT (default 3000)
+#   - Connect to Postgres using DB_* env vars
+#   - Serve your frontend statically (if applicable)
+#
+# Example stacks: Node.js, Python/FastAPI, Go, Java/Spring
+# ─────────────────────────────────────────────────────────
 
-WORKDIR /app
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/ ./
-
-RUN npm run build
-
-# ── Stage 2: API server + serve built frontend ──────────────
+# TODO: replace with your stack
 FROM node:20-alpine
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --production
-COPY src/ ./src/
 
-# Copy built frontend from stage 1
-COPY --from=frontend-build /app/dist ./public
-
-# TODO: update port if needed
-EXPOSE 3001
+EXPOSE 3000
 
 CMD ["node", "src/index.js"]
