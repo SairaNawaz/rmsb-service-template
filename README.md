@@ -66,6 +66,7 @@ Also add at **Settings → Variables → Actions** (repo level):
 
 1. Go to `https://kloudiusms.bounceme.net/settings`
 2. Click **Register Service** and fill in your service details
+   - **Service ID** must match `SERVICE_NAME` in your CI workflow — this is how the platform derives your image name (`rmsb-<SERVICE_NAME>-api`)
 3. Click **Activate** — this triggers auto-deploy
 
 ---
