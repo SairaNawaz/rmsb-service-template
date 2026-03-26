@@ -22,39 +22,19 @@ A tech-agnostic starting point for building microservices on the Kloudius MultiS
 
 GitHub → **Kloudius** org → **Use this template** → **Create a new repository**
 
-Name it following the convention: `<service-name>-<description>`
-e.g. `s2-capacity-planning`
-
 ---
 
-### 2. Choose a service name
-
-Pick a short unique identifier (e.g. `s2`, `hr`, `finance`).
-This becomes the URL path: `https://kloudiusms.bounceme.net/<name>`
-
----
-
-### 3. Update the TODOs
-
-| File | What to change |
-|------|----------------|
-| `.github/workflows/ci.yml` | `SERVICE_NAME` env var |
-| `docker-compose.example.yml` | Service name (e.g. `s2`) |
-| `Dockerfile` | Replace with your stack |
-
----
-
-### 4. Set up GitHub environment
+### 2. Set up GitHub environment
 
 Go to repo **Settings → Environments → New environment** → name it `production`.
 
-Add the following:
+Add the following secret:
 
 | Type | Name | Value |
 |------|------|-------|
 | Secret | `DEPLOY_TOKEN` | Fine-grained PAT (Contents: read+write on `multiservice_process_dashboard`) |
 
-Also add at **Settings → Variables → Actions** (repo level):
+Add the following at **Settings → Variables → Actions** (repo level):
 
 | Name | Value |
 |------|-------|
@@ -62,18 +42,56 @@ Also add at **Settings → Variables → Actions** (repo level):
 
 ---
 
-### 5. Register the service on the dashboard
+### 3. Register the service on the dashboard
 
 1. Go to `https://kloudiusms.bounceme.net/settings`
-2. Click **Register Service** and fill in your service details
-   - **Service ID** must match `SERVICE_NAME` in your CI workflow — this is how the platform derives your image name (`rmsb-<SERVICE_NAME>-api`)
-3. Click **Activate** — this triggers auto-deploy
+2. Click **Register Service** — fill in Display Name, Icon, Description, and Repo URL
+3. After submitting, a callout shows your assigned values:
+
+| Value | Example | Where to use |
+|-------|---------|--------------|
+| **Service ID** | `s2` | `SERVICE_NAME` GitHub variable |
+| **Path Prefix** | `/s2` | `VITE_BASE_PATH` GitHub variable, `DB_SCHEMA` |
+| **Schema Name** | `schema_s2` | `DB_SCHEMA` in your `.env` |
+
+---
+
+### 4. Set GitHub environment variables
+
+In the `production` environment (Settings → Environments → production), add:
+
+| Type | Name | Value |
+|------|------|-------|
+| Variable | `SERVICE_NAME` | assigned Service ID (e.g. `s2`) |
+| Variable | `VITE_BASE_PATH` | assigned Path Prefix (e.g. `/s2`) |
+
+> These drive the CI image name and Vite base path — no workflow files need editing.
+
+---
+
+### 5. Update your Dockerfile
+
+Replace the placeholder with your stack. If your service has a Vite frontend, wire up `VITE_BASE_PATH`:
+
+```dockerfile
+ARG VITE_BASE_PATH=/
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
+RUN npm run build
+```
+
+And in `vite.config`:
+
+```ts
+base: process.env.VITE_BASE_PATH || '/',
+```
 
 ---
 
 ### 6. Push to main
 
-CI will build your image, push to GHCR, and trigger the platform deploy automatically.
+CI will build your image, push to GHCR, and trigger the platform deploy.
+
+Then go back to the dashboard and click **Activate** on your service — this adds it to the compose and deploys it.
 
 ---
 
@@ -81,7 +99,9 @@ CI will build your image, push to GHCR, and trigger the platform deploy automati
 
 ```bash
 cp .env.example .env
+# Fill in SERVICE_NAME, VITE_BASE_PATH, DB_SCHEMA from the dashboard callout
 cp docker-compose.example.yml docker-compose.yml
+# Rename the service key in docker-compose.yml to your assigned service ID
 docker compose up --build
 ```
 
@@ -134,30 +154,26 @@ if (!user) {
 }
 ```
 
-**Calling the Microsoft Graph API (org users):**
-
-The gateway proxies Graph requests. Pass the M365 access token via the `Authorization` header:
-
-```ts
-const response = await fetch('/api/graph/users', {
-  headers: { Authorization: `Bearer ${accessToken}` }
-});
-```
-
-The access token is obtained from MSAL in the dashboard and can be passed to your service via props or context if needed.
-
 **Calling your own API:**
 
 All requests go through the gateway at your service's path prefix:
 
 ```ts
 const GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || window.location.origin;
-const BASE = `${GATEWAY}/<your-prefix>`;  // e.g. /s2
+const BASE = `${GATEWAY}${import.meta.env.VITE_BASE_PATH}`;  // e.g. /s2
 
 const data = await fetch(`${BASE}/items`).then(r => r.json());
 ```
 
 The gateway strips the prefix before forwarding — your API receives `/items`, not `/s2/items`.
+
+**Calling the Microsoft Graph API (org users):**
+
+```ts
+const response = await fetch('/api/graph/users', {
+  headers: { Authorization: `Bearer ${accessToken}` }
+});
+```
 
 ---
 

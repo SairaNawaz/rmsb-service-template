@@ -24,9 +24,12 @@ services:
       timeout: 5s
       retries: 10
 
-  # TODO: rename service to match your service name (e.g. s2, hr, finance)
+  # TODO: rename to your assigned service ID (e.g. s2)
   svc:
-    build: .
+    build:
+      context: .
+      args:
+        VITE_BASE_PATH: ${VITE_BASE_PATH}
     ports:
       - "3000:3000"
     environment:

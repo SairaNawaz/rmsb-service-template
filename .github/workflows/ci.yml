@@ -8,8 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # TODO: update SERVICE_NAME to match your service (e.g. s2, hr, finance)
-  SERVICE_NAME: svc
+  SERVICE_NAME: ${{ vars.SERVICE_NAME }}
 
 jobs:
   build:
