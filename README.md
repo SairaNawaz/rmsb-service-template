@@ -104,6 +104,62 @@ Browser → nginx → gateway (/api/*) → registry / users
 
 ---
 
+## Shared Authentication (M365)
+
+The dashboard handles M365 login — your service does not need its own auth.
+
+**How it works:**
+
+1. User logs in via the dashboard (Microsoft 365 / MSAL)
+2. The dashboard writes the session to `localStorage` under the key `rmsb_user`:
+   ```json
+   {
+     "username": "saira.nawaz@kloudius.com",
+     "displayName": "Saira Nawaz",
+     "role": "Administrator",
+     "email": "saira.nawaz@kloudius.com"
+   }
+   ```
+3. Your service frontend reads this directly — no redirect, no separate login
+
+**Reading the session in your frontend:**
+
+```ts
+const stored = localStorage.getItem('rmsb_user');
+const user = stored ? JSON.parse(stored) : null;
+
+if (!user) {
+  // user is not logged in — redirect or show message
+}
+```
+
+**Calling the Microsoft Graph API (org users):**
+
+The gateway proxies Graph requests. Pass the M365 access token via the `Authorization` header:
+
+```ts
+const response = await fetch('/api/graph/users', {
+  headers: { Authorization: `Bearer ${accessToken}` }
+});
+```
+
+The access token is obtained from MSAL in the dashboard and can be passed to your service via props or context if needed.
+
+**Calling your own API:**
+
+All requests go through the gateway at your service's path prefix:
+
+```ts
+const GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || window.location.origin;
+const BASE = `${GATEWAY}/<your-prefix>`;  // e.g. /s2
+
+const data = await fetch(`${BASE}/items`).then(r => r.json());
+```
+
+The gateway strips the prefix before forwarding — your API receives `/items`, not `/s2/items`.
+
+---
+
 ## Requirements for Your Service
 
 Your container must:
