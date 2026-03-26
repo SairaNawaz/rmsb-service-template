@@ -44,6 +44,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           tags: ghcr.io/${{ env.OWNER }}/rmsb-${{ env.SERVICE_NAME }}-api:latest
+          build-args: |
+            VITE_BASE_PATH=${{ vars.VITE_BASE_PATH }}
 
       - name: Trigger dashboard deploy
         if: github.event_name == 'push'

@@ -10,6 +10,10 @@
 # ─────────────────────────────────────────────────────────
 
 # TODO: replace with your stack
+# If your service has a frontend built with Vite, pass VITE_BASE_PATH as a build arg:
+#   ARG VITE_BASE_PATH=/
+#   ENV VITE_BASE_PATH=$VITE_BASE_PATH
+#   RUN npm run build  (uses process.env.VITE_BASE_PATH in vite.config)
 FROM node:20-alpine
 
 WORKDIR /app
