@@ -8,20 +8,22 @@ A tech-agnostic starting point for building microservices on the MultiService Pr
 
 | File | Purpose |
 |------|---------|
-| `.github/workflows/ci.yml` | GitHub Actions — builds image, pushes to GHCR, triggers dashboard deploy |
-| `Jenkinsfile` | Jenkins — builds image, pushes to GHCR, triggers dashboard Jenkins pipeline |
-| `Dockerfile` | Placeholder — replace with your own implementation |
+| `Dockerfile` | Serves health check page via nginx on port 3000 — replace with your stack |
+| `nginx.conf` | Default nginx config (port 3000) — used by placeholder Dockerfile |
+| `public/index.html` | Health check page — confirms your service is reachable |
 | `docker-compose.example.yml` | Local dev setup (postgres + your service) |
 | `.env.example` | Environment variables reference |
-| `public/index.html` | Static health check page — confirms your service is reachable |
-
-See [docs/switching-ci.md](docs/switching-ci.md) to choose between GitHub Actions and Jenkins.
+| `.github/workflows/ci.yml` | GitHub Actions — builds image, pushes to GHCR, triggers dashboard deploy |
+| `Jenkinsfile` | Jenkins — builds image, pushes to GHCR, triggers dashboard Jenkins pipeline |
+| `docs/github-actions-setup.md` | GitHub Actions configuration guide |
+| `docs/jenkins-setup.md` | Jenkins configuration guide |
+| `docs/switching-ci.md` | How to toggle between GitHub Actions and Jenkins |
 
 ---
 
 ## Getting Started
 
-### 1. Create a new repo from this template
+### 1. Create a repo from this template
 
 GitHub → **Use this template** → **Create a new repository**
 
@@ -29,15 +31,17 @@ GitHub → **Use this template** → **Create a new repository**
 
 ### 2. Register your service on the dashboard
 
-Go to your dashboard URL `/settings` → **Register Service**.
+Go to your dashboard URL `/settings` → **Register Service** → fill in Display Name, Icon, Description, and your repo URL.
 
-Fill in Display Name, Icon, Description, and the repo URL from step 1. After submitting, a callout shows your assigned values — **copy these before proceeding**:
+After submitting, a callout shows your assigned values:
 
 | Value | Example | Used for |
 |-------|---------|----------|
-| **Service ID** | `s2` | `SERVICE_NAME` variable, image name |
-| **Path Prefix** | `/s2` | `VITE_BASE_PATH` variable |
-| **Schema Name** | `schema_s2` | `DB_SCHEMA` in your `.env` |
+| **Service ID** | `s2` | `SERVICE_NAME` in CI, image name |
+| **Path Prefix** | `/s2` | `VITE_BASE_PATH` in CI |
+| **Schema Name** | `schema_s2` | `DB_SCHEMA` in `.env` |
+
+The callout also shows exactly what to configure for **GitHub Actions** and **Jenkins** — copy those values before dismissing. You can reopen it anytime via the **Setup Info** button on the service row.
 
 > The service starts as **pending** — you activate it after your first successful push.
 
@@ -45,15 +49,36 @@ Fill in Display Name, Icon, Description, and the repo URL from step 1. After sub
 
 ### 3. Choose your CI system and configure it
 
-**Option A — GitHub Actions:** See [docs/github-actions-setup.md](docs/github-actions-setup.md)
+**Option A — GitHub Actions:** [docs/github-actions-setup.md](docs/github-actions-setup.md)
 
-**Option B — Jenkins:** See [docs/jenkins-setup.md](docs/jenkins-setup.md)
+**Option B — Jenkins:** [docs/jenkins-setup.md](docs/jenkins-setup.md)
+
+See [docs/switching-ci.md](docs/switching-ci.md) to toggle between the two.
 
 ---
 
-### 4. Build your service
+### 4. Set up local dev
 
-Replace `Dockerfile` with your stack. If your service has a Vite frontend, wire up `VITE_BASE_PATH` so assets are served correctly under the path prefix:
+```bash
+cp .env.example .env
+# Fill in SERVICE_NAME, VITE_BASE_PATH, DB_SCHEMA from the dashboard callout
+
+cp docker-compose.example.yml docker-compose.yml
+# Rename the service key in docker-compose.yml to your assigned service ID
+
+docker compose up --build
+```
+
+---
+
+### 5. Build your service
+
+Replace `Dockerfile` with your own stack. Your container must:
+- **Listen on port 3000** — the gateway routes to this port
+- Connect to Postgres using `DB_*` env vars
+- Serve your frontend at `/`
+
+If your service has a **Vite frontend**, wire up `VITE_BASE_PATH`:
 
 ```dockerfile
 ARG VITE_BASE_PATH=/
@@ -65,31 +90,20 @@ In `vite.config`:
 
 ```ts
 base: process.env.VITE_BASE_PATH || '/',
-build: {
-  assetsDir: 'static',
-},
-```
-
-Set up local dev:
-
-```bash
-cp .env.example .env
-# Fill in SERVICE_NAME, VITE_BASE_PATH, DB_SCHEMA from the dashboard callout
-cp docker-compose.example.yml docker-compose.yml
-docker compose up --build
+build: { assetsDir: 'static' },
 ```
 
 ---
 
-### 5. Push to main
+### 6. Push to main
 
 CI builds your image, pushes to GHCR, and triggers the dashboard deploy.
 
 ---
 
-### 6. Activate on the dashboard
+### 7. Activate on the dashboard
 
-Go back to your dashboard URL `/settings`, find your service and click **Activate**.
+Go to `/settings` → find your service → click **Activate**.
 
 ---
 
@@ -98,14 +112,14 @@ Go back to your dashboard URL `/settings`, find your service and click **Activat
 ```
 Browser → nginx → gateway (/api/*) → registry / users
                        ↓
-              service prefix (/s2/*) → your container
+              /s2/* → your container :3000 (prefix stripped)
                        ↓
-              everything else → dashboard frontend
+              /*   → dashboard frontend
 ```
 
-- The gateway strips the path prefix before forwarding to your container
-- `/s2/items` → your app receives `/items`
-- Auth session is shared from the dashboard via `localStorage`
+- Gateway strips the path prefix: `/s2/items` → your app receives `/items`
+- Auth session shared from dashboard via `localStorage`
+- Each service gets its own PostgreSQL schema
 
 ---
 
@@ -118,24 +132,26 @@ Read the session in your frontend:
 ```ts
 const stored = localStorage.getItem('rmsb_user');
 const user = stored ? JSON.parse(stored) : null;
-// user: { username, displayName, role, email }
+// { username, displayName, role, email }
 ```
 
 Call your own API through the gateway:
 
 ```ts
 const GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || window.location.origin;
-const BASE = `${GATEWAY}${import.meta.env.VITE_BASE_PATH}`;
+const BASE = `${GATEWAY}${import.meta.env.VITE_BASE_PATH}`; // e.g. /s2
 
 const data = await fetch(`${BASE}/items`).then(r => r.json());
+// Gateway strips prefix → your API receives /items
 ```
 
 ---
 
 ## Requirements for Your Service
 
-Your container must:
-- Listen on `PORT` (env var, default `3000`)
-- Connect to Postgres using `DB_*` env vars (injected by the platform)
-- Use `DB_SCHEMA` as the Postgres search path (for schema isolation)
-- Serve `public/index.html` or your own frontend at `/`
+| Requirement | Detail |
+|-------------|--------|
+| Port | Must listen on `3000` |
+| Database | Connect via `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` |
+| Schema | Use `DB_SCHEMA` as Postgres search path |
+| Health check | Serve something at `/` |
