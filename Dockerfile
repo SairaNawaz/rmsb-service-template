@@ -14,12 +14,19 @@
 #   RUN npm run build
 # ─────────────────────────────────────────────────────────
 
-# Default: serves public/index.html as a health check page on port 3000.
+# Default: serves a health check page with a live DB connection test on port 3000.
 # Replace with your own stack when ready.
 
-FROM nginx:alpine
+FROM node:20-alpine
 
-COPY public/ /usr/share/nginx/html/
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
+
+COPY package.json ./
+RUN npm install --omit=dev
+
+COPY server.js ./
+COPY public/ ./public/
 
 EXPOSE 3000
+
+CMD ["node", "server.js"]

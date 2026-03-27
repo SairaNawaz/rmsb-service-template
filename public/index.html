@@ -3,19 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Service Running</title>
+  <title>Service Health</title>
   <style>
-    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f4f4f5; }
-    .card { background: white; border-radius: 8px; padding: 2rem 3rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
-    h1 { margin: 0 0 0.5rem; font-size: 1.5rem; color: #18181b; }
-    p { margin: 0; color: #71717a; }
-    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; margin-right: 6px; }
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f4f4f5; }
+    .card { background: white; border-radius: 10px; padding: 2rem 2.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 440px; }
+    h1 { margin: 0 0 1.5rem; font-size: 1.25rem; color: #18181b; display: flex; align-items: center; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+
+    .section-title { font-size: 0.75rem; font-weight: 600; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.75rem; }
+    .db-box { border: 1px solid #e4e4e7; border-radius: 8px; padding: 1rem 1.25rem; }
+    .db-status { display: flex; align-items: center; gap: 10px; margin-bottom: 0.75rem; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.ok      { background: #22c55e; }
+    .status-dot.error   { background: #ef4444; }
+    .status-dot.pending { background: #a1a1aa; animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+    .status-label { font-weight: 600; font-size: 0.95rem; color: #18181b; }
+    .status-msg   { font-size: 0.85rem; color: #71717a; margin: 0 0 0.75rem; word-break: break-word; }
+    .db-details   { display: flex; flex-direction: column; gap: 4px; }
+    .db-detail    { display: flex; justify-content: space-between; font-size: 0.82rem; }
+    .db-detail span:first-child { color: #71717a; }
+    .db-detail span:last-child  { color: #18181b; font-family: monospace; }
+
+    .btn { margin-top: 1.25rem; width: 100%; padding: 0.55rem; border: none; border-radius: 6px; background: #18181b; color: white; font-size: 0.9rem; cursor: pointer; }
+    .btn:hover { background: #3f3f46; }
+    .hint { margin-top: 1.5rem; font-size: 0.8rem; color: #a1a1aa; text-align: center; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1><span class="dot"></span>Service is running</h1>
-    <p>Replace this page with your own frontend.</p>
+
+    <p class="section-title">Database Connection</p>
+    <div class="db-box">
+      <div class="db-status">
+        <span class="status-dot pending" id="statusDot"></span>
+        <span class="status-label" id="statusLabel">Checking…</span>
+      </div>
+      <p class="status-msg" id="statusMsg"></p>
+      <div class="db-details" id="dbDetails"></div>
+    </div>
+
+    <button class="btn" onclick="check()">Re-check Connection</button>
+    <p class="hint">Replace this page with your own frontend.</p>
   </div>
+
+  <script>
+    async function check() {
+      const dot   = document.getElementById('statusDot');
+      const label = document.getElementById('statusLabel');
+      const msg   = document.getElementById('statusMsg');
+      const det   = document.getElementById('dbDetails');
+
+      dot.className   = 'status-dot pending';
+      label.textContent = 'Checking…';
+      msg.textContent   = '';
+      det.innerHTML     = '';
+
+      try {
+        const res  = await fetch('/db-check');
+        const data = await res.json();
+
+        dot.className     = 'status-dot ' + (data.ok ? 'ok' : 'error');
+        label.textContent = data.ok ? 'Connected' : 'Connection failed';
+        msg.textContent   = data.message;
+
+        det.innerHTML = [
+          ['Host',     data.host],
+          ['Database', data.database],
+          ['Schema',   data.schema],
+        ].map(([k, v]) =>
+          `<div class="db-detail"><span>${k}</span><span>${v}</span></div>`
+        ).join('');
+      } catch (e) {
+        dot.className     = 'status-dot error';
+        label.textContent = 'Request failed';
+        msg.textContent   = e.message;
+      }
+    }
+
+    check();
+  </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Service Template
 
-A tech-agnostic starting point for building microservices on the MultiService Process Dashboard. Includes CI/CD wiring (GitHub Actions + Jenkins), Docker config, and a health check page — bring your own stack.
+A tech-agnostic starting point for building microservices on the MultiService Process Dashboard. Includes CI/CD wiring (GitHub Actions + Jenkins), Docker config, and a health + DB check page — bring your own stack.
 
 ---
 
@@ -8,9 +8,10 @@ A tech-agnostic starting point for building microservices on the MultiService Pr
 
 | File | Purpose |
 |------|---------|
-| `Dockerfile` | Serves health check page via nginx on port 3000 — replace with your stack |
-| `nginx.conf` | Default nginx config (port 3000) — used by placeholder Dockerfile |
-| `public/index.html` | Health check page — confirms your service is reachable |
+| `Dockerfile` | Node.js server on port 3000 serving health + DB check page — replace with your stack |
+| `server.js` | Minimal Express server; serves static files and `/db-check` endpoint |
+| `package.json` | Dependencies for the placeholder server (`express`, `pg`) |
+| `public/index.html` | Health check page with live DB connection test |
 | `docker-compose.example.yml` | Local dev setup (postgres + your service) |
 | `.env.example` | Environment variables reference |
 | `.github/workflows/ci.yml` | GitHub Actions — builds image, pushes to GHCR, triggers dashboard deploy |
