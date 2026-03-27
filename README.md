@@ -1,6 +1,6 @@
-# Kloudius Service Template
+# Service Template
 
-A tech-agnostic starting point for building microservices on the Kloudius MultiService Process Dashboard. Includes CI/CD wiring, Docker config, and a health check page — bring your own stack.
+A tech-agnostic starting point for building microservices on the MultiService Process Dashboard. Includes CI/CD wiring, Docker config, and a health check page — bring your own stack.
 
 ---
 
@@ -20,13 +20,13 @@ A tech-agnostic starting point for building microservices on the Kloudius MultiS
 
 ### 1. Create a new repo from this template
 
-GitHub → **Kloudius** org → **Use this template** → **Create a new repository**
+GitHub → **Use this template** → **Create a new repository**
 
 ---
 
 ### 2. Register your service on the dashboard
 
-Go to `https://kloudiusms.bounceme.net/settings` → **Register Service**.
+Go to your dashboard URL `/settings` → **Register Service**.
 
 Fill in Display Name, Icon, Description, and the repo URL from step 1. After submitting, a callout shows your assigned values — **copy these before proceeding**:
 
@@ -101,7 +101,7 @@ CI will build your image, push to GHCR, and trigger the platform deploy.
 
 ### 6. Activate on the dashboard
 
-Go back to `https://kloudiusms.bounceme.net/settings`, find your service and click **Activate**. This adds it to the platform compose and deploys your container.
+Go back to your dashboard URL `/settings`, find your service and click **Activate**. This adds it to the platform compose and deploys your container.
 
 ---
 
@@ -131,10 +131,10 @@ The dashboard handles M365 login — your service does not need its own auth.
 2. The dashboard writes the session to `localStorage` under the key `rmsb_user`:
    ```json
    {
-     "username": "saira.nawaz@kloudius.com",
-     "displayName": "Saira Nawaz",
+     "username": "user@example.com",
+     "displayName": "Your Name",
      "role": "Administrator",
-     "email": "saira.nawaz@kloudius.com"
+     "email": "user@example.com"
    }
    ```
 3. Your service frontend reads this directly — no redirect, no separate login
