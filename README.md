@@ -8,9 +8,9 @@ A tech-agnostic starting point for building microservices on the MultiService Pr
 
 | File | Purpose |
 |------|---------|
-| `Dockerfile` | Node.js server on port 3000 serving health + DB check page — replace with your stack |
-| `server.js` | Minimal Express server; serves static files and `/db-check` endpoint |
-| `package.json` | Dependencies for the placeholder server (`express`, `pg`) |
+| `Dockerfile` | Placeholder Node.js server on port 3000 — replace with your own stack |
+| `server.js` | Placeholder server (Express + pg) — serves the health page and tests DB connectivity |
+| `package.json` | Dependencies for the placeholder only — delete when you bring your own stack |
 | `public/index.html` | Health check page with live DB connection test |
 | `docker-compose.example.yml` | Local dev setup (postgres + your service) |
 | `.env.example` | Environment variables reference |
@@ -74,7 +74,9 @@ docker compose up --build
 
 ### 5. Build your service
 
-Replace `Dockerfile` with your own stack. Your container must:
+The placeholder `Dockerfile`, `server.js`, and `package.json` are Node.js only to provide a working health + DB check page out of the box. **You are not required to use Node.js.** Replace them with any stack you prefer — Python/FastAPI, Go, Java/Spring, etc.
+
+Your container must:
 - **Listen on port 3000** — the gateway routes to this port
 - Connect to Postgres using `DB_*` env vars
 - Serve your frontend at `/`
