@@ -7,17 +7,18 @@
 #   - Serve your frontend statically (if applicable)
 #
 # Example stacks: Node.js, Python/FastAPI, Go, Java/Spring
+#
+# Default: serves public/index.html as a health check page.
+# Replace with your own stack when ready.
 # ─────────────────────────────────────────────────────────
 
-# TODO: replace with your stack
-# If your service has a frontend built with Vite, pass VITE_BASE_PATH as a build arg:
+# If your service has a Vite frontend, pass VITE_BASE_PATH as a build arg:
 #   ARG VITE_BASE_PATH=/
 #   ENV VITE_BASE_PATH=$VITE_BASE_PATH
-#   RUN npm run build  (uses process.env.VITE_BASE_PATH in vite.config)
-FROM node:20-alpine
+#   RUN npm run build
 
-WORKDIR /app
+FROM nginx:alpine
 
-EXPOSE 3000
+COPY public/ /usr/share/nginx/html/
 
-CMD ["node", "src/index.js"]
+EXPOSE 80
