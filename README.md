@@ -1,6 +1,6 @@
 # Service Template
 
-A tech-agnostic starting point for building microservices on the MultiService Process Dashboard. Includes CI/CD wiring, Docker config, and a health check page — bring your own stack.
+A tech-agnostic starting point for building microservices on the MultiService Process Dashboard. Includes CI/CD wiring (GitHub Actions + Jenkins), Docker config, and a health check page — bring your own stack.
 
 ---
 
@@ -8,11 +8,14 @@ A tech-agnostic starting point for building microservices on the MultiService Pr
 
 | File | Purpose |
 |------|---------|
-| `.github/workflows/ci.yml` | Builds image, pushes to GHCR, triggers platform deploy |
+| `.github/workflows/ci.yml` | GitHub Actions — builds image, pushes to GHCR, triggers dashboard deploy |
+| `Jenkinsfile` | Jenkins — builds image, pushes to GHCR, triggers dashboard Jenkins pipeline |
 | `Dockerfile` | Placeholder — replace with your own implementation |
 | `docker-compose.example.yml` | Local dev setup (postgres + your service) |
 | `.env.example` | Environment variables reference |
 | `public/index.html` | Static health check page — confirms your service is reachable |
+
+See [docs/switching-ci.md](docs/switching-ci.md) to choose between GitHub Actions and Jenkins.
 
 ---
 
@@ -32,33 +35,19 @@ Fill in Display Name, Icon, Description, and the repo URL from step 1. After sub
 
 | Value | Example | Used for |
 |-------|---------|----------|
-| **Service ID** | `s2` | `SERVICE_NAME` GitHub variable, image name |
-| **Path Prefix** | `/s2` | `VITE_BASE_PATH` GitHub variable |
+| **Service ID** | `s2` | `SERVICE_NAME` variable, image name |
+| **Path Prefix** | `/s2` | `VITE_BASE_PATH` variable |
 | **Schema Name** | `schema_s2` | `DB_SCHEMA` in your `.env` |
 
 > The service starts as **pending** — you activate it after your first successful push.
 
 ---
 
-### 3. Set up GitHub environment
+### 3. Choose your CI system and configure it
 
-Go to repo **Settings → Environments → New environment** → name it `production`.
+**Option A — GitHub Actions:** See [docs/github-actions-setup.md](docs/github-actions-setup.md)
 
-Add the following:
-
-| Type | Name | Value |
-|------|------|-------|
-| Secret | `DEPLOY_TOKEN` | Fine-grained PAT (Contents: read+write on `multiservice_process_dashboard`) |
-| Variable | `SERVICE_NAME` | Service ID from step 2 (e.g. `s2`) |
-| Variable | `VITE_BASE_PATH` | Path Prefix from step 2 (e.g. `/s2`) |
-
-Also add at **Settings → Variables → Actions** (repo level):
-
-| Name | Value |
-|------|-------|
-| `DEPLOY_ENV` | `production` |
-
-> No workflow files need editing — CI reads everything from these variables.
+**Option B — Jenkins:** See [docs/jenkins-setup.md](docs/jenkins-setup.md)
 
 ---
 
@@ -87,7 +76,6 @@ Set up local dev:
 cp .env.example .env
 # Fill in SERVICE_NAME, VITE_BASE_PATH, DB_SCHEMA from the dashboard callout
 cp docker-compose.example.yml docker-compose.yml
-# Rename the service key in docker-compose.yml to your assigned service ID
 docker compose up --build
 ```
 
@@ -95,13 +83,13 @@ docker compose up --build
 
 ### 5. Push to main
 
-CI will build your image, push to GHCR, and trigger the platform deploy.
+CI builds your image, pushes to GHCR, and triggers the dashboard deploy.
 
 ---
 
 ### 6. Activate on the dashboard
 
-Go back to your dashboard URL `/settings`, find your service and click **Activate**. This adds it to the platform compose and deploys your container.
+Go back to your dashboard URL `/settings`, find your service and click **Activate**.
 
 ---
 
@@ -121,52 +109,25 @@ Browser → nginx → gateway (/api/*) → registry / users
 
 ---
 
-## Shared Authentication (M365)
+## Shared Authentication
 
-The dashboard handles M365 login — your service does not need its own auth.
+The dashboard handles login — your service does not need its own auth.
 
-**How it works:**
-
-1. User logs in via the dashboard (Microsoft 365 / MSAL)
-2. The dashboard writes the session to `localStorage` under the key `rmsb_user`:
-   ```json
-   {
-     "username": "user@example.com",
-     "displayName": "Your Name",
-     "role": "Administrator",
-     "email": "user@example.com"
-   }
-   ```
-3. Your service frontend reads this directly — no redirect, no separate login
-
-**Reading the session in your frontend:**
+Read the session in your frontend:
 
 ```ts
 const stored = localStorage.getItem('rmsb_user');
 const user = stored ? JSON.parse(stored) : null;
-
-if (!user) {
-  // user is not logged in — redirect or show message
-}
+// user: { username, displayName, role, email }
 ```
 
-**Calling your own API:**
+Call your own API through the gateway:
 
 ```ts
 const GATEWAY = import.meta.env.VITE_API_GATEWAY_URL || window.location.origin;
-const BASE = `${GATEWAY}${import.meta.env.VITE_BASE_PATH}`;  // e.g. /s2
+const BASE = `${GATEWAY}${import.meta.env.VITE_BASE_PATH}`;
 
 const data = await fetch(`${BASE}/items`).then(r => r.json());
-```
-
-The gateway strips the prefix before forwarding — your API receives `/items`, not `/s2/items`.
-
-**Calling the Microsoft Graph API (org users):**
-
-```ts
-const response = await fetch('/api/graph/users', {
-  headers: { Authorization: `Bearer ${accessToken}` }
-});
 ```
 
 ---

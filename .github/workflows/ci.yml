@@ -52,5 +52,5 @@ jobs:
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository_owner }}/multiservice_process_dashboard/dispatches \
+            https://api.github.com/repos/${{ github.repository_owner }}/${{ vars.DASHBOARD_REPO }}/dispatches \
             -d '{"event_type":"service-deploy"}'
