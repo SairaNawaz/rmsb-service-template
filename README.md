@@ -158,3 +158,5 @@ const data = await fetch(`${BASE}/items`).then(r => r.json());
 | Database | Connect via `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` |
 | Schema | Use `DB_SCHEMA` as Postgres search path |
 | Health check | Serve something at `/` |
+
+> **DB credentials are auto-provisioned.** When you activate your service on the dashboard, a dedicated PostgreSQL schema and a scoped DB user are created automatically. The credentials (`DB_USER`, `DB_PASSWORD`) are injected into your container via `docker-compose` — you don't set them manually in production. For local dev, use the shared postgres credentials in your `.env`.
