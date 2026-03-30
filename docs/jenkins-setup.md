@@ -12,20 +12,23 @@ In Jenkins → **Manage Jenkins → Security → Credentials → Global → Add 
 
 | Kind | ID | Value |
 |------|----|-------|
-| Username with password | `jenkins-admin` | Username: `admin`, Password: your Jenkins admin API token |
+| Username with password | `jenkins-admin` | Username: your Jenkins admin username, Password: your Jenkins admin API token |
 
 To get your Jenkins API token: Jenkins → top-right user menu → **Configure** → **Add new Token** → copy it.
 
 ## 2. Set pipeline environment variables
 
-In the `Jenkinsfile` at the root of the repo, update:
+Open the `Jenkinsfile` at the root of your repo and set `SERVICE_NAME` and `VITE_BASE_PATH` in the `environment` block:
 
-| Variable | Value |
-|----------|-------|
-| `OWNER` | Your GHCR owner (lowercase GitHub username) |
-| `DASHBOARD_JENKINS_URL` | Your dashboard URL + `/jenkins` |
-| `SERVICE_NAME` | Service ID from dashboard callout (e.g. `s2`) |
-| `VITE_BASE_PATH` | Path prefix from dashboard callout (e.g. `/s2`) |
+```groovy
+environment {
+    REGISTRY       = 'ghcr.io'
+    SERVICE_NAME   = 's2'   // ← your assigned service ID
+    VITE_BASE_PATH = '/s2'  // ← your assigned path prefix
+}
+```
+
+> `GHCR_OWNER`, `DASHBOARD_JENKINS_URL`, and `DASHBOARD_JOB` are **global** Jenkins env vars — set once in **Manage Jenkins → System → Global properties → Environment variables**. Do not add them per-job.
 
 ## 3. Create Jenkins pipeline job
 

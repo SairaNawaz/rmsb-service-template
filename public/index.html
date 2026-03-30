@@ -63,7 +63,7 @@
       det.innerHTML     = '';
 
       try {
-        const res  = await fetch('/db-check');
+        const res  = await fetch('db-check');
         const data = await res.json();
 
         dot.className     = 'status-dot ' + (data.ok ? 'ok' : 'error');
