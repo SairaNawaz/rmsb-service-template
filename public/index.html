@@ -63,7 +63,9 @@
       det.innerHTML     = '';
 
       try {
-        const res  = await fetch('db-check');
+        // Build the correct URL regardless of trailing slash in current path
+        const basePath = '/' + (window.location.pathname.split('/').filter(Boolean)[0] || '');
+        const res  = await fetch(basePath + '/db-check');
         const data = await res.json();
 
         dot.className     = 'status-dot ' + (data.ok ? 'ok' : 'error');
