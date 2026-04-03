@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# docker-compose.yml  —  base service definition
+#
+# This is the only file you need to work with during development.
+# docker-compose.override.yml is auto-merged by Docker Compose to add
+# a local postgres — no extra flags needed.
+#
+#   cp .env.example .env
+#   docker compose up --build
+#
+# Do not modify docker-compose.service.yml — that is managed by the platform.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  s2:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      DB_SCHEMA: ${DB_SCHEMA}
+    depends_on:
+      postgres:
+        condition: service_healthy

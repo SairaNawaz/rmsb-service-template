@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# docker-compose.service.yml  —  PLATFORM MANAGED, DO NOT EDIT
+#
+# This file is committed to the dashboard repo by CI as
+# services/docker-compose.<SERVICE_NAME>.service.yml and run by Jenkins
+# alongside the dashboard's base docker-compose.yml.
+#
+# It is self-contained for production — no local build, no local ports.
+# Postgres and the gateway come from the dashboard's base compose.
+#
+# Fill in your assigned values from the dashboard registration callout once:
+#   s2        → your Service ID    (e.g. s1, s2, s3)
+#   kloudius  → your GHCR owner
+#   schema_s2 → your Schema Name
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  s2:
+    image: ghcr.io/kloudius/rmsb-s2-api:${TAG:-latest}
+    container_name: rmsb-s2
+    env_file:
+      - services/.env.s2
+    environment:
+      PORT: 3000
+      DB_SCHEMA: schema_s2
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Optional sidecars ──────────────────────────────────────────────────────
+  # Add any extra containers your service needs.
+  #
+  # s2-worker:
+  #   image: ghcr.io/kloudius/rmsb-s2-worker:${TAG:-latest}
+  #   container_name: rmsb-s2-worker
+  #   env_file:
+  #     - services/.env.s2
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - s2

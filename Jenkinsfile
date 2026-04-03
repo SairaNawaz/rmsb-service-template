@@ -6,6 +6,7 @@
 // Per-job environment variables (set in Jenkins job → Build Environment):
 //   SERVICE_NAME          — service ID from dashboard callout (e.g. s2)
 //   VITE_BASE_PATH        — path prefix from dashboard callout (e.g. /s2)
+//   DASHBOARD_REPO        — dashboard GitHub repo (e.g. kloudius/rmsb-dashboard)
 
 pipeline {
     agent any
@@ -32,6 +33,25 @@ pipeline {
                             -t $REGISTRY/$GHCR_OWNER/rmsb-${SERVICE_NAME}-api:latest \
                             .
                         docker push $REGISTRY/$GHCR_OWNER/rmsb-${SERVICE_NAME}-api:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Publish Compose to Dashboard') {
+            steps {
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh '''
+                        git clone https://$GITHUB_TOKEN@github.com/$DASHBOARD_REPO.git _dashboard
+                        mkdir -p _dashboard/services
+                        cp docker-compose.service.yml _dashboard/services/docker-compose.${SERVICE_NAME}.service.yml
+                        cd _dashboard
+                        git config user.email "ci@rmsb"
+                        git config user.name  "RMSB CI"
+                        git add services/docker-compose.${SERVICE_NAME}.service.yml
+                        git diff --cached --quiet || git commit -m "chore: update compose for ${SERVICE_NAME}"
+                        git push
+                        cd .. && rm -rf _dashboard
                     '''
                 }
             }
