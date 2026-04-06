@@ -38,9 +38,10 @@ Set these in your Jenkins job → Build Environment:
 |----------|-------|
 | `SERVICE_NAME` | your Service ID |
 | `VITE_BASE_PATH` | your Path Prefix |
-| `DASHBOARD_REPO` | `<org>/rmsb-dashboard` |
 
 Credentials required: `github-token`, `jenkins-admin`
+
+`DASHBOARD_REPO` and `GHCR_OWNER` are global Jenkins vars — set once by the admin, not per job.
 
 ---
 

@@ -2,11 +2,11 @@
 //   GHCR_OWNER            — GHCR owner (lowercase GitHub username)
 //   DASHBOARD_JENKINS_URL — e.g. https://your-domain/jenkins
 //   DASHBOARD_JOB         — e.g. rmsb-dashboard
+//   DASHBOARD_REPO        — dashboard GitHub repo (e.g. kloudius/rmsb-dashboard)
 //
 // Per-job environment variables (set in Jenkins job → Build Environment):
 //   SERVICE_NAME          — service ID from dashboard callout (e.g. s2)
 //   VITE_BASE_PATH        — path prefix from dashboard callout (e.g. /s2)
-//   DASHBOARD_REPO        — dashboard GitHub repo (e.g. kloudius/rmsb-dashboard)
 
 pipeline {
     agent any
