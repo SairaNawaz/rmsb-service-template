@@ -41,6 +41,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     sh '''
+                        rm -rf _dashboard
                         git clone https://$GITHUB_TOKEN@github.com/$DASHBOARD_REPO.git _dashboard
                         mkdir -p _dashboard/services
                         sed \
