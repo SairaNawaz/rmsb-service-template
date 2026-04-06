@@ -44,7 +44,8 @@ pipeline {
                     sh '''
                         git clone https://$GITHUB_TOKEN@github.com/$DASHBOARD_REPO.git _dashboard
                         mkdir -p _dashboard/services
-                        cp docker-compose.service.yml _dashboard/services/docker-compose.${SERVICE_NAME}.service.yml
+                        envsubst < docker-compose.service.yml \
+                          > _dashboard/services/docker-compose.${SERVICE_NAME}.service.yml
                         cd _dashboard
                         git config user.email "ci@rmsb"
                         git config user.name  "RMSB CI"

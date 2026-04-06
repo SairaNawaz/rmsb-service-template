@@ -1,16 +1,14 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # docker-compose.yml  —  LOCAL DEV ONLY
 #
-# Spins up a local postgres + your service.
-#
-#   cp .env.example .env
+#   cp .env.example .env   # fill in SERVICE_NAME, DB_SCHEMA, GHCR_OWNER etc.
 #   docker compose up --build
 #
 # For production, see docker-compose.service.yml — platform managed, do not edit.
 # ─────────────────────────────────────────────────────────────────────────────
 
 services:
-  s2:
+  ${SERVICE_NAME}:
     build: .
     ports:
       - "3000:3000"

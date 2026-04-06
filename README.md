@@ -26,11 +26,18 @@ After submitting, note your assigned values:
 
 ---
 
-### 3. Update compose files
+### 3. Set your env vars
 
-**`docker-compose.yml`** — replace `s2` with your Service ID.
+Copy `.env.example` to `.env` and fill in your assigned values:
 
-**`docker-compose.service.yml`** — replace `s2`, `kloudius`, and `schema_s2` with your assigned values. This is the only time you touch this file.
+```bash
+SERVICE_NAME=s2
+VITE_BASE_PATH=/s2
+DB_SCHEMA=schema_s2
+GHCR_OWNER=kloudius
+```
+
+Both compose files reference these vars — no manual replacements needed in YAML.
 
 ---
 
