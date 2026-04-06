@@ -21,9 +21,10 @@ After submitting, copy `.env.example` to `.env` and fill in your assigned values
 ```bash
 SERVICE_NAME=s2        # Service ID from callout
 VITE_BASE_PATH=/s2     # Path Prefix from callout
-DB_SCHEMA=schema_s2    # Schema Name from callout
 GHCR_OWNER=kloudius    # your GitHub org/username
 ```
+
+`DB_SCHEMA` is derived automatically as `schema_<SERVICE_NAME>` — no need to set it.
 
 Both compose files reference these vars — no manual replacements needed in YAML.
 

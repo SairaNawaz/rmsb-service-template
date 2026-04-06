@@ -15,7 +15,7 @@ services:
       - services/.env.${SERVICE_NAME}
     environment:
       PORT: 3000
-      DB_SCHEMA: ${DB_SCHEMA}
+      DB_SCHEMA: schema_${SERVICE_NAME}
     restart: unless-stopped
     depends_on:
       postgres:
