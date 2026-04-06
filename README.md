@@ -20,11 +20,10 @@ After submitting, copy `.env.example` to `.env` and fill in your assigned values
 
 ```bash
 SERVICE_NAME=s2        # Service ID from callout
-VITE_BASE_PATH=/s2     # Path Prefix from callout
 GHCR_OWNER=kloudius    # your GitHub org/username
 ```
 
-`DB_SCHEMA` is derived automatically as `schema_<SERVICE_NAME>` — no need to set it.
+`VITE_BASE_PATH` and `DB_SCHEMA` are derived automatically from `SERVICE_NAME`.
 
 Both compose files reference these vars — no manual replacements needed in YAML.
 
@@ -36,12 +35,11 @@ Set these in your Jenkins job → Build Environment:
 
 | Variable | Value |
 |----------|-------|
-| `SERVICE_NAME` | your Service ID |
-| `VITE_BASE_PATH` | your Path Prefix |
+| `SERVICE_NAME` | your Service ID from the callout |
 
 Credentials required: `github-token`, `jenkins-admin`
 
-`DASHBOARD_REPO` and `GHCR_OWNER` are global Jenkins vars — set once by the admin, not per job.
+`DASHBOARD_REPO`, `GHCR_OWNER`, `DASHBOARD_JENKINS_URL`, `DASHBOARD_JOB` are global Jenkins vars — set once by the admin, not per job.
 
 ---
 

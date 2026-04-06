@@ -6,7 +6,6 @@
 //
 // Per-job environment variables (set in Jenkins job → Build Environment):
 //   SERVICE_NAME          — service ID from dashboard callout (e.g. s2)
-//   VITE_BASE_PATH        — path prefix from dashboard callout (e.g. /s2)
 
 pipeline {
     agent any
@@ -29,7 +28,7 @@ pipeline {
                     sh '''
                         echo $GITHUB_TOKEN | docker login ghcr.io -u $GHCR_OWNER --password-stdin
                         docker build \
-                            --build-arg VITE_BASE_PATH=${VITE_BASE_PATH:-/} \
+                            --build-arg VITE_BASE_PATH=/${SERVICE_NAME} \
                             -t $REGISTRY/$GHCR_OWNER/rmsb-${SERVICE_NAME}-api:latest \
                             .
                         docker push $REGISTRY/$GHCR_OWNER/rmsb-${SERVICE_NAME}-api:latest
