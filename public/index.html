@@ -63,8 +63,9 @@
       det.innerHTML     = '';
 
       try {
-        // Build the correct URL regardless of trailing slash in current path
-        const basePath = '/' + (window.location.pathname.split('/').filter(Boolean)[0] || '');
+        // Works both locally (/) and under a path prefix (/s2) in production
+        const segments = window.location.pathname.split('/').filter(Boolean);
+        const basePath = segments.length ? '/' + segments[0] : '';
         const res  = await fetch(basePath + '/db-check');
         const data = await res.json();
 
