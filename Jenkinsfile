@@ -4,14 +4,14 @@
 //   DASHBOARD_JOB         — e.g. rmsb-dashboard
 //   DASHBOARD_REPO        — dashboard GitHub repo (e.g. kloudius/rmsb-dashboard)
 //
-// Per-job environment variables (set in Jenkins job → Build Environment):
-//   SERVICE_NAME          — service ID from dashboard callout (e.g. s2)
+// Per-job: set SERVICE_NAME in the environment block below to your assigned Service ID
 
 pipeline {
     agent any
 
     environment {
-        REGISTRY = 'ghcr.io'
+        REGISTRY     = 'ghcr.io'
+        SERVICE_NAME = 's1'   // ← set to your assigned Service ID
     }
 
     stages {

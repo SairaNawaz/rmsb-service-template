@@ -59,11 +59,14 @@ Note your assigned **Service ID** from the dashboard (e.g. `s2`).
 
 ### 2. Configure CI
 
-Set in your Jenkins job → Build Environment:
+Set `SERVICE_NAME` in the `environment` block in `Jenkinsfile`:
 
-| Variable | Value |
-|----------|-------|
-| `SERVICE_NAME` | your Service ID from the callout |
+```groovy
+environment {
+    REGISTRY     = 'ghcr.io'
+    SERVICE_NAME = 's2'   // ← your assigned Service ID
+}
+```
 
 Credentials required: `github-token`, `jenkins-admin`
 
