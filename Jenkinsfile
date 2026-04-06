@@ -43,7 +43,10 @@ pipeline {
                     sh '''
                         git clone https://$GITHUB_TOKEN@github.com/$DASHBOARD_REPO.git _dashboard
                         mkdir -p _dashboard/services
-                        envsubst < docker-compose.service.yml \
+                        sed \
+                          -e "s/\${SERVICE_NAME}/${SERVICE_NAME}/g" \
+                          -e "s/\${GHCR_OWNER}/${GHCR_OWNER}/g" \
+                          docker-compose.service.yml \
                           > _dashboard/services/docker-compose.${SERVICE_NAME}.service.yml
                         cd _dashboard
                         git config user.email "ci@rmsb"
