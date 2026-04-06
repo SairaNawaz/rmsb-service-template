@@ -16,25 +16,13 @@ GitHub → **Use this template** → **Create a new repository**
 
 Go to `/settings` → **Register Service** → fill in display name, icon, description, repo URL, and your env vars.
 
-After submitting, note your assigned values:
-
-| Value | Used in |
-|-------|---------|
-| Service ID (e.g. `s2`) | `docker-compose.yml`, `docker-compose.service.yml`, CI config |
-| Path Prefix (e.g. `/s2`) | `VITE_BASE_PATH` in CI |
-| Schema Name (e.g. `schema_s2`) | `docker-compose.service.yml` |
-
----
-
-### 3. Set your env vars
-
-Copy `.env.example` to `.env` and fill in your assigned values:
+After submitting, copy `.env.example` to `.env` and fill in your assigned values:
 
 ```bash
-SERVICE_NAME=s2
-VITE_BASE_PATH=/s2
-DB_SCHEMA=schema_s2
-GHCR_OWNER=kloudius
+SERVICE_NAME=s2        # Service ID from callout
+VITE_BASE_PATH=/s2     # Path Prefix from callout
+DB_SCHEMA=schema_s2    # Schema Name from callout
+GHCR_OWNER=kloudius    # your GitHub org/username
 ```
 
 Both compose files reference these vars — no manual replacements needed in YAML.
